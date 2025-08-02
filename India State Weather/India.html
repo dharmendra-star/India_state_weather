@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>India Map with Weather Chart</title>
+    <script src="https://code.highcharts.com/mapdata/countries/in/in-all.js"></script>
+    <script src="https://code.highcharts.com/maps/highmaps.js"></script>
+    <script src="https://code.highcharts.com/maps/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/mapdata/countries/in/in-all.js"></script>
+</head>
+<body>
+
+<h2 style="text-align: center;">India All States Map with Weather Chart</h2>
+
+<div id="container-map" style="width: 100%; height: 500px;"></div>
+<div id="container-weather" style="width: 100%; height: 400px; margin-top: 20px;"></div>
+
+<script>
+// Sample temperature data
+
+const weatherData = {
+    'Andhra Pradesh': 37,
+    'Arunachal Pradesh': 25,
+    'Assam': 36,
+    'Bihar': 33,
+    'Chhattisgarh': 34,
+    'Goa': 35,
+    'Gujarat': 38,
+    'Haryana': 34,
+    'Himachal Pradesh': 35,
+    'Jharkhand': 30,
+    'Karnataka': 29,
+    'Kerala': 28,
+    'Madhya Pradesh': 36,
+    'Maharashtra': 32,
+    'Manipur': 33,
+    'Meghalaya': 38,
+    'Mizoram': 39,
+    'Nagaland': 32,
+    'Odisha': 39,
+    'Punjab': 33,
+    'Rajasthan': 39,
+    'Sikkim': 35,
+    'Tamil Nadu': 30,
+    'Telangana': 35,
+    'Tripura': 30,
+    'Uttar Pradesh': 36,
+    'Uttarakhand': 35,
+    'West Bengal': 34,
+    'Delhi': 35,
+    'Ladakh': 26,
+    'Jammu and Kashmir': 27,
+    'Andaman and Nicobar Islands': 30,
+    'Chandigarh': 31,
+    'Dadra and Nagar Haveli and Daman and Diu': 33,
+    'Lakshadweep': 29,
+    'Puducherry': 31
+};
+
+const stateCodeMap = {
+    'Andhra Pradesh': 'in-ap',
+    'Arunachal Pradesh': 'in-ar',
+    'Assam': 'in-as',
+    'Bihar': 'in-br',
+    'Chhattisgarh': 'in-cg',
+    'Goa': 'in-ga',
+    'Gujarat': 'in-gj',
+    'Haryana': 'in-hr',
+    'Himachal Pradesh': 'in-hp',
+    'Jharkhand': 'in-jh',
+    'Karnataka': 'in-ka',
+    'Kerala': 'in-kl',
+    'Madhya Pradesh': 'in-mp',
+    'Maharashtra': 'in-mh',
+    'Manipur': 'in-mn',
+    'Meghalaya': 'in-ml',
+    'Mizoram': 'in-mz',
+    'Nagaland': 'in-nl',
+    'Odisha': 'in-od',
+    'Punjab': 'in-pb',
+    'Rajasthan': 'in-rj',
+    'Sikkim': 'in-sk',
+    'Tamil Nadu': 'in-tn',
+    'Telangana': 'in-ts',
+    'Tripura': 'in-tr',
+    'Uttar Pradesh': 'in-up',
+    'Uttarakhand': 'in-uk',
+    'West Bengal': 'in-wb',
+    'Delhi': 'in-dl',
+    'Ladakh': 'in-la',
+    'Jammu and Kashmir':'in-jk',
+    'Andaman and Nicobar Islands': 'in-an',
+    'Chandigarh': 'in-ch',
+    'Dadra and Nagar Haveli and Daman and Diu': 'in-dd',
+    'Lakshadweep': 'in-ld',
+    'Puducherry': 'in-py'
+};
+
+
+// Convert data for map
+const stateTempData = Object.keys(weatherData).map(state => [
+    stateCodeMap[state],
+    weatherData[state]
+]);
+
+Object.keys(weatherData).forEach(state => {
+    if (!stateCodeMap[state]) {
+        console.warn(`Missing code for: ${state}`);
+    }
+});
+
+const missingStates = stateTempData.filter(([code, temp]) => !code);
+console.log("Check missing or invalid codes:", missingStates);
+
+
+
+
+// Render Map
+const mapChart = Highcharts.mapChart('container-map', {
+    chart: {
+        map: 'countries/in/in-all'
+    },
+    title: {
+        text: 'India State-wise Weather Map'
+
+    },
+    colorAxis: {
+        min: 25,
+        max: 40,
+        stops: [
+            [0, '#A7C7E7'],
+            [0.5, '#FFDD57'],
+            [1, '#FF5733']
+        ]
+    },
+    series: [{
+        id: 'temperatureSeries',
+        data: stateTempData,
+        name: 'Temperature (°C)',
+        states: {
+            hover: {
+                color: '#FF884D'
+            }
+        },
+        dataLabels: {
+            enabled: true,
+            format: '{point.name}'
+        }
+    }]
+});
+
+// Add blinking effect by changing colors every second
+let toggle = false;
+setInterval(() => {
+    const newData = stateTempData.map(([code, value]) => [
+        code,
+        value,
+        toggle ? '#FF5733' : '#FFD700' // Toggle between two highlight colors
+    ]);
+
+    mapChart.get('temperatureSeries').update({
+        data: stateTempData,
+        color: toggle ? '#FF5733' : '#FFD700'
+    }, true, false);
+
+    toggle = !toggle;
+}, 1000);
+
+// Weather Column Chart
+Highcharts.chart('container-weather', {
+    chart: {
+        type: 'column'
+    },
+    title: {
+        text: 'Temperature by State (°C)'
+    },
+    xAxis: {
+        categories: Object.keys(weatherData),
+        labels: {
+            rotation: -45
+        },
+        crosshair: true
+    },
+    yAxis: {
+        min: 0,
+        title: {
+            text: 'Temperature (°C)'
+        }
+    },
+    tooltip: {
+        valueSuffix: '°C'
+    },
+    series: [{
+        name: 'Temperature',
+        data: Object.values(weatherData),
+        colorByPoint: true
+    }]
+});
+</script>
+
+</body>
+</html>
